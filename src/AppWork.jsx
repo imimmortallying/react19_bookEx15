@@ -62,8 +62,6 @@ const App = () => {
 
   // или создать стейт с data тут, как и isLoading, но setState перенести в Page
 
-  // см. пример 2 в доке. () => setPage('2') нужно сделать action
-
   return (
     <div className="App">
       <div className="container">

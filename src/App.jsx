@@ -5,31 +5,31 @@ import { useState, useEffect, useTransition, use, useCallback } from 'react';
 const url1 = 'https://api-sage-two-60.vercel.app/mocks/issues/1?delay=2000';
 const url2 = 'https://api-sage-two-60.vercel.app/mocks/issues/2?delay=1000';
 
-const Page = ({id}) => {
-  const [data, setData] = useState({});
+const Page = ({id, data, isLoading}) => {
   // const [isLoading, setLoading] = useState(false);
-  const [isLoading, startTransition] = useTransition();
-  const url = id === '1' ? url1 : url2;
+  // const [data, setData] = useState({});
+  // const [isLoading, startTransition] = useTransition();
+  // const url = id === '1' ? url1 : url2;
 
-  console.log('Page, id:', id, 'data: ', data )
-  const fetchData = useCallback(() => {
-    startTransition(async function () {
-      const response = await fetch(url)
-      const newData = await response.json();
+  // console.log('Page, id:', id, 'data: ', data )
+  // const fetchData = useCallback(() => {
+  //   startTransition(async function () {
+  //     const response = await fetch(url)
+  //     const newData = await response.json();
       
-      startTransition(async function () {
-          setData(newData);
-        }
-      );
-    });
-  }, [url, startTransition]);
+  //     startTransition(async function () {
+  //         setData(newData);
+  //       }
+  //     );
+  //   });
+  // }, [url, startTransition]);
 
 
   //! так позволяет убрать блики, но не позволяет отрисовать данные последнего нажатого id
-  useEffect(() => {
-    console.log('useEffect')
-    fetchData()
-  }, [fetchData, url]);
+  // useEffect(() => {
+  //   console.log('useEffect')
+  //   fetchData()
+  // }, [fetchData, url]);
 
   //! исходная версия
   // useEffect(() => {
@@ -56,29 +56,47 @@ const Page = ({id}) => {
 
 const App = () => {
   const [page, setPage] = useState('1');
+  const [data, setData] = useState({});
+  const [isLoading, startTransition] = useTransition();
+  const fetchData = useCallback((id) => {
+    
+    startTransition(async function () {
+    const url = id === '1' ? url1 : url2;
+    const response = await fetch(url)
+    const newData = await response.json();
+    
+    startTransition(async function () {
+        setPage(id)
+        setData(newData);
+      }
+    );
+  });
+}, [startTransition]);
 
   // видимо, чтобы загрузить те данные, которые были нажаты последними, а не загружены последними, нужно вынести state data на уровень App
   // и получить data через useTransition, затем передать его в Page
 
   // или создать стейт с data тут, как и isLoading, но setState перенести в Page
 
+  // см. пример 2 в доке. () => setPage('2') нужно сделать action
+
   return (
     <div className="App">
       <div className="container">
         <ul className="column">
           <li>
-            <button className="button" onClick={() => setPage('1')} disabled={page === '1'}>
+            <button className="button" onClick={() => fetchData('1')} disabled={page === '1'}>
               Issue 1
             </button>
           </li>
           <li>
-            <button className="button" onClick={() => setPage('2')} disabled={page === '2'}>
+            <button className="button" onClick={() => fetchData('2')} disabled={page === '2'}>
               Issue 2
             </button>
           </li>
         </ul>
 
-        <Page id={page}/>
+        <Page id={page} data={data} isLoading={isLoading}/>
       </div>
     </div>
   );
